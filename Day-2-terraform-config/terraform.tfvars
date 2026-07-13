@@ -1,0 +1,5 @@
+cidr_block = "10.0.0.0/16"
+tag = "my-vpc"
+cidr_block-vpc-2 = "10.0.1.0/24"
+cidr_block_subnet = "10.0.0.0/24"
+tag_subnet = "vinod"
