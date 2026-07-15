@@ -1,5 +1,3 @@
-# creation of RDS instance with custom network configuration
-
 # creation of VPC for RDS instance with custom network configuration
 resource "aws_vpc" "custom_private_vpc" {
   cidr_block = "10.0.0.0/16"
@@ -119,32 +117,21 @@ resource "aws_db_subnet_group" "custom_db_subnet_group" {
 # RDS MySQL Instance
 resource "aws_db_instance" "custom_rds" {
   identifier = "custom-rds"
-
   engine         = "mysql"
   engine_version = "8.0"
-
   instance_class        = "db.t3.micro"
   allocated_storage     = 20
   max_allocated_storage = 100
   storage_type          = "gp2"
-
   db_name  = "TerraformDB"
   username = "admin"
   password = "Admin1234!"
-
   port = 3306
-
   db_subnet_group_name = aws_db_subnet_group.custom_db_subnet_group.name
-
-  vpc_security_group_ids = [
-    aws_security_group.custom_rds_sg.id
-  ]
-
+  vpc_security_group_ids = [aws_security_group.custom_rds_sg.id]
   publicly_accessible = false
   multi_az            = false
-
-  backup_retention_period = 0
-
+  backup_retention_period = 1
   skip_final_snapshot = true
   deletion_protection = false
 
@@ -153,6 +140,25 @@ resource "aws_db_instance" "custom_rds" {
   }
 }
 
+# RDS MySQL Read Replica
+resource "aws_db_instance" "replica" {
+  identifier = "replica-rds"
+  instance_class = "db.t3.micro"
+  replicate_source_db = aws_db_instance.custom_rds.arn
+  db_subnet_group_name = aws_db_subnet_group.custom_db_subnet_group.name
+  publicly_accessible = false
+  vpc_security_group_ids = [aws_security_group.custom_rds_sg.id]
+  skip_final_snapshot = true
+  deletion_protection = false
+  apply_immediately = true
+  tags = {
+    Name = "Terra-rds-read-replica"
+  }
+}
+
+#Creation of Redis cache for RDS instance with custom network configuration
+
+# Creation of security group for Redis instance with custom network configuration 
 resource "aws_security_group" "custom_redis_sg" {
   name        = "custom-redis-sg"
   description = "Security group for Redis"
@@ -191,26 +197,16 @@ resource "aws_elasticache_subnet_group" "custom_redis_subnet_group" {
 
 resource "aws_elasticache_replication_group" "custom_redis" {
   replication_group_id = "custom-redis"
-
   description = "Redis cache for application"
-
   engine         = "redis"
   engine_version = "7.1"
-
   node_type = "cache.t3.micro"
   port      = 6379
-
   num_cache_clusters = 1
-
   subnet_group_name = aws_elasticache_subnet_group.custom_redis_subnet_group.name
-
-  security_group_ids = [
-    aws_security_group.custom_redis_sg.id
-  ]
-
+  security_group_ids = [aws_security_group.custom_redis_sg.id]
   automatic_failover_enabled = false
   multi_az_enabled           = false
-
   tags = {
     Name = "custom-redis"
   }
