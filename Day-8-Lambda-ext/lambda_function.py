@@ -2,7 +2,7 @@ import json
 
 def get_response():
     return {
-        "message": "Hello i am from VPG",
+        "message": "Hello i am from KNkk",
         "status": "success"
     }
 

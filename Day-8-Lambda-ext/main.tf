@@ -47,6 +47,12 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_file = "${path.module}/lambda_function.py"
+  output_path = "${path.module}/lambda_function.zip"
+}
+
 ##############################
 # Lambda Function
 ##############################
@@ -61,9 +67,9 @@ resource "aws_lambda_function" "terraform_lam" {
 
   handler = "lambda_function.lambda_handler"
 
-  filename = "lambda_function.zip"
+  filename = data.archive_file.lambda_zip.output_path
 
-  source_code_hash = filebase64sha256("lambda_function.zip")
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 }
 
 ##############################
