@@ -1,16 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.55"
-    }
-    archive = {
-      source  = "hashicorp/archive"
-      version = "~> 2.3"
-    }
-  }
-}
-
 resource "aws_iam_role" "lambda_role" {
   name = "lambda_execution_role"
 
